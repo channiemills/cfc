@@ -2,13 +2,17 @@
 Script used to generate list of Gold Start attendance athletes. 
 Top athletes by attendance for a given weightlifting cycle, broken up by gender.
 
-
+Prerequisites: 
 Pull total attendance from wodify.
 Pull users from wodify.
 - People > Athletes > Select all
 
+Tech prerequisites:
+Pandas
+
+Coverage:
 Look up athletes from attendance in users to get gender.
-Return count by period
+Export two csvs by gender, reporting attendance count for the period
 
 # TODO - Using selenium or another tool, automatically download the needed reports (2) from Wodify
 # TODO - Wrap in a Windows console or executable that users can access and interact with easily. 
