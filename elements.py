@@ -33,6 +33,7 @@ class Reports:
     date_from_xpath = "//input[contains(@id, 'DateInputFrom')]"
     date_to_xpath = "//input[contains(@id, 'DateInputTo')]"
     component_xpath = "//select[contains(@id, 'Component')]"
+    export_xpath = "//a[contains(@id, 'Export')]"
 
     def open_reports(self, browser, report_type):
         """
@@ -50,13 +51,13 @@ class Reports:
         else:
             print('Report type {} not implemented'.format(report_type))
 
-        time.sleep(3)
+        time.sleep(1.5)
 
     def pull_reports(self, browser, report_type, exercise, from_date, to_date): # won't need to pass in report type when validation put elsewhere
         """
         
         :param browser: 
-        :param exercise: 
+        :param exercise: List of exercises to search
         :return: 
         """
         # Set custom date
@@ -71,11 +72,15 @@ class Reports:
 
         # Set component
         # validate component, consider putting this at the start, before logging in
-        if exercise not in exercises[report_type]:
-            print('Invalid exercise: {}'.format(exercise))
-            browser.quit()
-        else:
-            #component = Select(browser.find_element_by_id(self.component_id))
-            component = Select(browser.find_elements_by_xpath(self.component_xpath)[1])
-            component.select_by_visible_text(exercise)
-            time.sleep(3)
+        for exercise in exercise:
+            if exercise not in exercises[report_type]:
+                print('Invalid exercise: {}'.format(exercise))
+                browser.quit()
+            else:
+                #component = Select(browser.find_element_by_id(self.component_id))
+                component = Select(browser.find_elements_by_xpath(self.component_xpath)[1])
+                component.select_by_visible_text(exercise)
+                time.sleep(2)
+                expt = browser.find_element_by_xpath(self.export_xpath)
+                expt.click()
+                time.sleep(1)
