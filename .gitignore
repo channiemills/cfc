@@ -1,0 +1,16 @@
+# Don't track
+###################
+.idea/
+__pycache__/
+wodify_variables.py
+
+
+# Test downloads # 
+###################
+*.xlsx
+
+
+# Test outputs # 
+###################
+*.csv
+*.zip

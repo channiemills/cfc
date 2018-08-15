@@ -8,7 +8,7 @@ import os.path
 
 def process_lifts(cycle):
     for exercise in exercises['weightlifting']:
-        f = exercise + '_' + cycle + '.xlsx'
+        f = cycle + '_' + exercise + '.xlsx'
         if os.path.isfile(f):
             # read in lift data, will need to loop through
             source = pd.read_excel(f)
@@ -39,7 +39,6 @@ def process_lifts(cycle):
             lift_1r_male = lift_1r_sort[lift_1r_sort['Gender'] == 'Male']
             lift_1r_female = lift_1r_sort[lift_1r_sort['Gender'] == 'Female']
 
-            # Write out
             # Write output
             lift_1r_male[['Athlete Name', 'Weight']].to_csv('{}_{}_male.csv'.format(cycle, exercise), index=False)
             lift_1r_female[['Athlete Name', 'Weight']].to_csv('{}_{}_female.csv'.format(cycle, exercise), index=False)
