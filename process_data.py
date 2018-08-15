@@ -4,6 +4,7 @@ import os.path
 
 # for leaderboard, may add param for percentages
 # TODO - remove people that tested multiple times, take highest
+# TODO - consider pulling last 6 months, then filtering to testing period for leaderboard then can use one pull
 
 def process_lifts(cycle):
     for exercise in exercises['weightlifting']:
@@ -40,11 +41,11 @@ def process_lifts(cycle):
 
             # Write out
             # Write output
-            lift_1r_male[['Athlete Name', 'Weight']].to_csv('male_{}_{}.csv'.format(exercise, cycle), index=False)
-            lift_1r_female[['Athlete Name', 'Weight']].to_csv('female_{}_{}.csv'.format(exercise, cycle), index=False)
+            lift_1r_male[['Athlete Name', 'Weight']].to_csv('{}_{}_male.csv'.format(cycle, exercise), index=False)
+            lift_1r_female[['Athlete Name', 'Weight']].to_csv('{}_{}_female.csv'.format(cycle, exercise), index=False)
 
         else:
             print('File does not exist for lift: {}.'.format(exercise))
 
 
-process_lifts('testcycle')
+process_lifts('summer18cycle')

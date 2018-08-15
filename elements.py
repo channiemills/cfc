@@ -7,6 +7,8 @@ from exercises import exercises
 
 from selenium.webdriver.support.ui import Select
 
+# TODO - customize download dir per: https://stackoverflow.com/questions/46937319/how-to-use-chrome-webdriver-in-selenium-to-download-files-in-python
+
 
 class Login:
 
@@ -34,6 +36,8 @@ class Reports:
     date_to_xpath = "//input[contains(@id, 'DateInputTo')]"
     component_xpath = "//select[contains(@id, 'Component')]"
     export_xpath = "//a[contains(@id, 'Export')]"
+
+    whitespace_id = "WodifyAdminTheme_wt14_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent_SilkUIFramework_wt84_block_wtColumn2"
 
     def open_reports(self, browser, report_type):
         """
@@ -63,12 +67,13 @@ class Reports:
         # Set custom date
         date = Select(browser.find_element_by_xpath(self.date_xpath))
         date.select_by_visible_text('Custom')
-        time.sleep(1)
+        time.sleep(2)
         # Set from and to dates
         date_from = browser.find_element_by_xpath(self.date_from_xpath)
         date_from.send_keys(from_date)
         date_to = browser.find_element_by_xpath(self.date_to_xpath)
         date_to.send_keys(to_date)
+        time.sleep(2)
 
         # Set component
         # validate component, consider putting this at the start, before logging in
@@ -80,7 +85,9 @@ class Reports:
                 #component = Select(browser.find_element_by_id(self.component_id))
                 component = Select(browser.find_elements_by_xpath(self.component_xpath)[1])
                 component.select_by_visible_text(exercise)
-                time.sleep(2)
+                time.sleep(3)
+                whitespace = browser.find_element_by_id(self.whitespace_id)
+                whitespace.click()
                 expt = browser.find_element_by_xpath(self.export_xpath)
                 expt.click()
                 time.sleep(1)

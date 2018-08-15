@@ -29,7 +29,8 @@ reports = elements.Reports()
 
 reports.open_reports(browser, 'weightlifting')
 
-reports.pull_reports(browser, 'weightlifting', exercises['weightlifting'], '07/30/2018', '08/12/2018')
+#reports.pull_reports(browser, 'weightlifting', exercises['weightlifting'], '07/30/2018', '08/12/2018')
+reports.pull_reports(browser, 'weightlifting', ['Shoulder Press'], '07/30/2018', '08/12/2018')
 
 #import pdb; pdb.set_trace()
 browser.quit()
