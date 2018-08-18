@@ -38,6 +38,7 @@ class Reports:
     export_xpath = "//a[contains(@id, 'Export')]"
 
     whitespace_id = "WodifyAdminTheme_wt14_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent_SilkUIFramework_wt84_block_wtColumn2"
+    whitespace_id_metcon = "WodifyAdminTheme_wt51_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent"
 
     def open_reports(self, browser, report_type):
         """
@@ -64,6 +65,8 @@ class Reports:
         :param exercise: List of exercises to search
         :return: 
         """
+        self.open_reports(browser, report_type)
+
         # Set custom date
         date = Select(browser.find_element_by_xpath(self.date_xpath))
         date.select_by_visible_text('Custom')
@@ -86,7 +89,11 @@ class Reports:
                 component = Select(browser.find_elements_by_xpath(self.component_xpath)[1])
                 component.select_by_visible_text(exercise)
                 time.sleep(3)
-                whitespace = browser.find_element_by_id(self.whitespace_id)
+                if report_type == 'metcon':
+                    whitespace = browser.find_element_by_id(self.whitespace_id_metcon)
+                else:
+                    whitespace = browser.find_element_by_id(self.whitespace_id)
+
                 whitespace.click()
                 expt = browser.find_element_by_xpath(self.export_xpath)
                 expt.click()
