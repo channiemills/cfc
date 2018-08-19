@@ -1,6 +1,7 @@
 import pandas as pd
 from exercises import exercises
 import os.path
+from utilities import clean_name
 
 # for leaderboard, may add param for percentages
 # TODO - remove people that tested multiple times, take highest
@@ -47,4 +48,53 @@ def process_lifts(cycle):
             print('File does not exist for lift: {}.'.format(exercise))
 
 
-process_lifts('summer18cycle')
+def process_metcons(cycle):
+    for exercise in exercises['metcon']:
+        f = cycle + '_' + clean_name(exercise) + '.xlsx'
+        if os.path.isfile(f):
+            # read in metcon data
+            source = pd.read_excel(f)
+
+            # reduce to useful columns
+            metcon = source[['Athlete', 'Result', 'Is As Prescribed', 'Is Rx Plus']]
+            metcon = metcon.sort_values('Result', ascending=False)
+
+            # Read in gender data and apply
+            users = pd.read_excel('users.xlsx')
+
+            # Athlete name
+            users['Athlete Name'] = users['First Name'] + ' ' + users['Last Name']
+
+            # Look up gender
+            metcon['Gender'] = metcon['Athlete'].map(users.set_index('Athlete Name')['Gender'])
+
+            # Break out Rx and Rx+
+            metcon_rx = metcon[metcon['Is As Prescribed'] == True]
+            metcon_rxp = metcon[metcon['Is Rx Plus'] == True]
+
+            # Split on gender
+            metcon_rx_female = metcon_rx[metcon_rx['Gender'] == 'Female']
+            metcon_rx_male = metcon_rx[metcon_rx['Gender'] == 'Male']
+            metcon_rxp_female = metcon_rxp[metcon_rxp['Gender'] == 'Female']
+            metcon_rxp_male = metcon_rxp[metcon_rxp['Gender'] == 'Male']
+
+            # Write out
+
+            metcon_dfs = [metcon_rx_female, metcon_rx_male, metcon_rxp_female, metcon_rxp_male]
+            ### need something here for if no results
+
+            for df in metcon_dfs:
+                if len(df) > 0:
+                    g = df.Gender.unique()[0]
+                    r = 'rx' if df['Is As Prescribed'].unique()[0] == True else 'rxp'
+                    df[['Athlete', 'Result']].to_csv('{}_{}_{}_{}'.format(cycle, clean_name(exercise)), g, r, index=False)
+
+            # metcon_rx_female[['Athlete', 'Result']].to_csv('{}_{}_female_rx.csv'.format(cycle, clean_name(exercise)), index=False)
+            # metcon_rx_male[['Athlete', 'Result']].to_csv('{}_{}_male_rx.csv'.format(cycle, clean_name(exercise)), index=False)
+            #
+            # metcon_rxp_female[['Athlete', 'Result']].to_csv('{}_{}_female_rxp.csv'.format(cycle, clean_name(exercise)), index=False)
+            # metcon_rxp_male[['Athlete', 'Result']].to_csv('{}_{}_male_rxp.csv'.format(cycle, clean_name(exercise)), index=False)
+
+#process_lifts('summer18cycle')
+
+process_metcons('summer18cycle')
