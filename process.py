@@ -166,10 +166,11 @@ def process_weightsheet(cycle):
             pcts = [i / 100.0 for i in range(40, 110, 5)]
 
             for pct in pcts:
-                joined_all[pct] = joined_all['Weight'] * pct
+                joined_all[str(round(pct*100))+'%'] = joined_all['Weight'] * pct
 
             joined_all = joined_all.fillna(0)
 
+            joined_all = joined_all.drop('Weight', axis=1)
             # add something special for if front squat, use back squat file and take 80 pct of it
 
             joined_all.to_csv('{}_{}_percentsheet.csv'.format(cycle, exercise), index=False)
