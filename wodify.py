@@ -21,12 +21,12 @@ reports = elements.Reports()
 
 # testing metcons
 
-reports.pull_reports(browser, 'metcon', exercises['metcon'], '07/15/2018', '08/05/2018')
+#reports.pull_reports(browser, 'metcon', exercises['metcon'], '07/30/2018', '08/12/2018')
 
 
 # testing lifts. will need to update ids on these
 
-#reports.pull_reports(browser, 'weightlifting', exercises['weightlifting'], '07/30/2018', '08/12/2018')
+reports.pull_reports(browser, 'weightlifting', exercises['weightlifting'], '02/12/2018', '08/12/2018')
 #reports.pull_reports(browser, 'weightlifting', ['Shoulder Press'], '07/30/2018', '08/12/2018')
 
 browser.quit()

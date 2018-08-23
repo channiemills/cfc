@@ -33,6 +33,6 @@ def clean_name(liftname):
     return ''.join(l for l in f if l.isalnum())
 
 
-#file_rename(filenames, 'summer18cycle')
+file_rename(filenames, 'summer18cycle_weightsheets')
 
-file_rename(metcons, 'summer18cycle')
+#file_rename(metcons, 'summer18cycle')

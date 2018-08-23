@@ -1,34 +1,32 @@
 # cfc
-Scripts to assist crossfit gym with tech needs
+Scripts to assist crossfit gym with tech needs. More object oriented approach than attempted with [previous wodify project]( https://github.com/channiemills/Wodify).
 
-## Attendance.py
+## attendance.py
 
 Script used to generate list of Gold Start attendance athletes. 
 Top athletes by attendance for a given weightlifting cycle, broken up by gender.
 
-**Prerequisites:**
+## wodify.py: Automation
 
-- Total attendance from wodify.
-- Active users from wodify.
-  - People > Athletes > Select all
+Script used to navigate to wodify and generate performance reports.
 
-**Tech prerequisites:**
-- Pandas
-
-**Coverage:**
-
-- Look up athletes from attendance in users to get gender.
-- Export two csvs by gender, reporting attendance count for the period
-
-
-## wodify.py: Automation (above TODO)
-
-Script used to navigate to wodify and generate performance reports. Will update to generate attendance report. More object oriented approach than attempted with [previous wodify project]( https://github.com/channiemills/Wodify).
-
-#### TODO 
-- Generate reports needed for attendance.py
-- Handle file downloads 
-- Script to manipulate downloads to find max performances by exercise
-- Script to manipulate downloads to calculate percentages based on athlete max by exercise
+#### TODO
+- Update to pull dependent reports: attendance, athletes&members, users
+  - Call attendance from here instead
 - Replace sleep steps with a more robust wait method
+
+## utilities.py: File manipulation
+
+Download management.
+
+#### TODO
+- Improve to specify download directory
+- Specify subdirectory by cycle
+
+## process.py: Data manipulation
+
+ Data manipulation for leaderboards (metcon and weightlifting) as well as weightlifting percentages.
+
+#### TODO
+- Encapsulate code for simpler function definitions. Definitely can reduce duplicate code, particularly in weightsheets.
 - Wrap all in a Windows console or executable that users can access and interact with easily. 
