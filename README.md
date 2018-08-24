@@ -30,3 +30,8 @@ Download management.
 #### TODO
 - Encapsulate code for simpler function definitions. Definitely can reduce duplicate code, particularly in weightsheets.
 - Wrap all in a Windows console or executable that users can access and interact with easily. 
+
+
+### General TODO
+- Add checks to confirm necessary reports exist before going on to later steps
+- Directory clean up 

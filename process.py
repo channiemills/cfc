@@ -105,7 +105,7 @@ def process_metcons(cycle):
 
 def process_weightsheet(cycle):
     for exercise in exercises['weightlifting']:
-        f = cycle + '_' + exercise + '.xlsx'
+        f = cycle + '_' + 'weightsheets_' + clean_name(exercise) + '.xlsx'
         if os.path.isfile(f):
             # read in lift data, will need to loop through
             source = pd.read_excel(f)
@@ -159,6 +159,7 @@ def process_weightsheet(cycle):
             joined = lift_all.append(missing_members)
 
             # get rid of unnecessary cols
+            joined['Athlete Name'] = joined['Athlete Name'].str.upper()
             joined_sort = joined.sort_values('Athlete Name')
             joined_all = joined_sort[['Athlete Name', 'Weight']]
 
@@ -173,7 +174,15 @@ def process_weightsheet(cycle):
             joined_all = joined_all.drop('Weight', axis=1)
             # add something special for if front squat, use back squat file and take 80 pct of it
 
-            joined_all.to_csv('{}_{}_percentsheet.csv'.format(cycle, exercise), index=False)
+            if clean_name(exercise) == 'BackSquat':
+                frontsquat = joined_all.copy()
+                for col in list(frontsquat):
+                    if col != 'Athlete Name':
+                        frontsquat[col] = frontsquat[col] * 0.8
+
+                frontsquat.to_csv('weightsheets\\{}_FrontSquat_percentsheet.csv'.format(cycle), index=False) #assumes weightsheet dir exists
+
+            joined_all.to_csv('weightsheets\\{}_{}_percentsheet.csv'.format(cycle, clean_name(exercise)), index=False)
 
         else:
             print('File does not exist for {}.'.format(exercise))
@@ -182,3 +191,5 @@ def process_weightsheet(cycle):
 #process_lifts('summer18cycle')
 
 #process_metcons('summer18cycle')
+
+process_weightsheet('summer18cycle')
