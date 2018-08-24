@@ -139,44 +139,35 @@ def process_weightsheet(cycle):
             membership = pd.read_excel('AthletesAndMembershipDetails.xlsx') # assumes this is there >.<
             members = membership[['Athlete', 'Athlete Name']]
 
-            common_members = lift_all[['Athlete', 'Athlete Name']].merge(members, on=['Athlete'])
+            joined = pd.merge(members, lift_all, how='left')
 
-            missing_raw = members[(~members['Athlete'].isin(common_members['Athlete']))]
-
-            missing_unq = missing_raw['Athlete Name'].unique()
-
-            # need to get rid of coaches - could leverage api endpoint
-            missing = [member for member in missing_unq if member not in coaches]
-
-            missing_members = pd.DataFrame({'Athlete Name': missing})
-
-            joined = lift_all.append(missing_members)
+            roster = joined[~joined['Athlete Name'].isin(coaches)]
 
             # get rid of unnecessary cols
-            joined['Athlete Name'] = joined['Athlete Name'].str.upper()
-            joined_sort = joined.sort_values('Athlete Name')
-            joined_all = joined_sort[['Athlete Name', 'Weight']]
+            roster['Athlete Name'] = roster['Athlete Name'].str.upper()
+            roster_sort = roster.sort_values('Athlete Name')
+            roster_final = roster_sort[['Athlete Name', 'Weight']]
 
             # add pcts
             pcts = [i / 100.0 for i in range(40, 105, 5)]
 
-            joined_all = joined_all.fillna(0)
+            roster_final = roster_final.fillna(0)
 
             for pct in pcts:
-                joined_all[str(round(pct*100))+'%'] = joined_all['Weight'].apply(lambda x: math.ceil((x * pct)/5) * 5) #math.ceil((joined_all['Weight'] * pct)/5) * 5
+                roster_final[str(round(pct*100))+'%'] = roster_final['Weight'].apply(lambda x: math.ceil((x * pct)/5) * 5) #math.ceil((joined_all['Weight'] * pct)/5) * 5
 
-            joined_all = joined_all.drop('Weight', axis=1)
+            roster_final = roster_final.drop('Weight', axis=1)
             # add something special for if front squat, use back squat file and take 80 pct of it
 
             if clean_name(exercise) == 'BackSquat':
-                frontsquat = joined_all.copy()
+                frontsquat = roster_final.copy()
                 for col in list(frontsquat):
                     if col != 'Athlete Name':
                         frontsquat[col] = frontsquat[col].apply(lambda x: math.ceil((x * 0.8)/5) * 5)
 
                 frontsquat.to_csv('weightsheets\\{}_FrontSquat_percentsheet.csv'.format(cycle), index=False) #assumes weightsheet dir exists
 
-            joined_all.to_csv('weightsheets\\{}_{}_percentsheet.csv'.format(cycle, clean_name(exercise)), index=False)
+            roster_final.to_csv('weightsheets\\{}_{}_percentsheet.csv'.format(cycle, clean_name(exercise)), index=False)
 
         else:
             print('File does not exist for {}.'.format(exercise))
