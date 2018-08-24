@@ -92,6 +92,11 @@ class Reports:
 
 
     def athlete_report(self, browser):
+        """
+        
+        :param browser: 
+        :return: Complete member roster at time of pull
+        """
         athlete_report_id = "WodifyAdminTheme_wt2_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent_wtMainContent_wtReportsTableRecords_ctl02_W_Widgets_UI_wt21_block_wtViewButtonPlaceholder_wt12"
         program_xpath = "//select[contains(@id, 'Programs')]"
         browser.find_element_by_link_text("ATHLETES").click()
@@ -104,6 +109,13 @@ class Reports:
         time.sleep(1)
 
     def attendance_report(self, browser, from_date, to_date):
+        """
+        
+        :param browser: 
+        :param from_date: 
+        :param to_date: 
+        :return: Total attendance for active members 
+        """
         browser.find_element_by_link_text("ATTENDANCE").click()
         total_attendance_id = "WodifyAdminTheme_wt28_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent_wtMainContent_wtReportsTableRecords_ctl26_W_Widgets_UI_wt21_block_wtViewButtonPlaceholder_wt25"
         browser.find_element_by_id(total_attendance_id).click()
@@ -113,6 +125,21 @@ class Reports:
         browser.find_element_by_class_name("Panel_content").click()
         expt = browser.find_element_by_xpath(self.export_xpath)
         expt.click()
+        time.sleep(1)
+
+    def user_report(self, browser):
+        checkbox_xpath = "//input[contains(@id, 'SelectAll')]"
+        all_users_xpath = "//a[contains(@id, 'SelectAll')]"
+        bulk_actions_id = "WodifyAdminTheme_wtLayout_List_WithFilterTabs_block_WodifyAdminThemeBase_wt17_block_wtMainContent_W_Widgets_UI_wt107_block_wtContent_TabFilters_UI_wtTabFilters_block_wtListOfRecords_W_Widgets_UI_wt106_block_wtText"
+
+        browser.find_element_by_link_text("PEOPLE").click()
+        browser.find_element_by_link_text("ATHLETES").click()
+        time.sleep(2)
+        browser.find_element_by_xpath(checkbox_xpath).click()
+        browser.find_element_by_xpath(all_users_xpath).click()
+        time.sleep(1)
+        browser.find_element_by_id(bulk_actions_id).click()
+        browser.find_element_by_link_text("Export").click()
         time.sleep(1)
 
     def set_dates(self, browser, from_date, to_date):

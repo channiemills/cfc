@@ -11,9 +11,8 @@ Top athletes by attendance for a given weightlifting cycle, broken up by gender.
 Script used to navigate to wodify and generate performance reports.
 
 #### TODO
-- Update to pull dependent reports: attendance, athletes&members, users
-  - Call attendance from here instead
 - Replace sleep steps with a more robust wait method
+- Write out sample executions. Consider workflow options
 
 ## utilities.py: File manipulation
 
@@ -28,6 +27,7 @@ Download management.
  Data manipulation for leaderboards (metcon and weightlifting) as well as weightlifting percentages.
 
 #### TODO
+- add attendance as a function here
 - Encapsulate code for simpler function definitions. Definitely can reduce duplicate code, particularly in weightsheets.
   - Gender stuff can be simplified to take one df and return male and female versions
 - Wrap all in a Windows console or executable that users can access and interact with easily. 
