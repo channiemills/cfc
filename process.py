@@ -1,11 +1,12 @@
 import pandas as pd
 import os.path
+import math
+
 from exercises import exercises
 from coaches import coaches
 from utilities import clean_name
 
 # for leaderboard, may add param for percentages
-# TODO - remove people that tested multiple times, take highest
 # TODO - consider pulling last 6 months, then filtering to testing period for leaderboard then can use one pull
 
 def process_lifts(cycle):
@@ -88,19 +89,12 @@ def process_metcons(cycle):
             # Write out
 
             metcon_dfs = [metcon_rx_female, metcon_rx_male, metcon_rxp_female, metcon_rxp_male]
-            ### need something here for if no results
 
             for df in metcon_dfs:
                 if len(df) > 0:
                     g = df.Gender.unique()[0]
                     r = 'rx' if df['Is As Prescribed'].unique()[0] == True else 'rxp'
                     df[['Athlete', 'Result']].to_csv('{}_{}_{}_{}.csv'.format(cycle, clean_name(exercise), g, r), index=False)
-
-            # metcon_rx_female[['Athlete', 'Result']].to_csv('{}_{}_female_rx.csv'.format(cycle, clean_name(exercise)), index=False)
-            # metcon_rx_male[['Athlete', 'Result']].to_csv('{}_{}_male_rx.csv'.format(cycle, clean_name(exercise)), index=False)
-            #
-            # metcon_rxp_female[['Athlete', 'Result']].to_csv('{}_{}_female_rxp.csv'.format(cycle, clean_name(exercise)), index=False)
-            # metcon_rxp_male[['Athlete', 'Result']].to_csv('{}_{}_male_rxp.csv'.format(cycle, clean_name(exercise)), index=False)
 
 
 def process_weightsheet(cycle):
@@ -121,7 +115,7 @@ def process_weightsheet(cycle):
             lift['Weight'] = lift['Weight'].apply(pd.to_numeric)
 
             # pull out testing dates '07/30/2018', '08/12/2018'
-            testing_ind = (lift['Date'] >= '07/30/2018') & (lift['Date'] <= '08/12/2018')
+            testing_ind = (lift['Date'] >= '07/30/2018') & (lift['Date'] <= '08/12/2018') # TODO - don't hardcode
             lift_testing = lift.loc[testing_ind]
             lift_sixmo = lift.loc[~testing_ind]
 
@@ -164,12 +158,12 @@ def process_weightsheet(cycle):
             joined_all = joined_sort[['Athlete Name', 'Weight']]
 
             # add pcts
-            pcts = [i / 100.0 for i in range(40, 110, 5)]
-
-            for pct in pcts:
-                joined_all[str(round(pct*100))+'%'] = joined_all['Weight'] * pct
+            pcts = [i / 100.0 for i in range(40, 105, 5)]
 
             joined_all = joined_all.fillna(0)
+
+            for pct in pcts:
+                joined_all[str(round(pct*100))+'%'] = joined_all['Weight'].apply(lambda x: math.ceil((x * pct)/5) * 5) #math.ceil((joined_all['Weight'] * pct)/5) * 5
 
             joined_all = joined_all.drop('Weight', axis=1)
             # add something special for if front squat, use back squat file and take 80 pct of it
@@ -178,7 +172,7 @@ def process_weightsheet(cycle):
                 frontsquat = joined_all.copy()
                 for col in list(frontsquat):
                     if col != 'Athlete Name':
-                        frontsquat[col] = frontsquat[col] * 0.8
+                        frontsquat[col] = frontsquat[col].apply(lambda x: math.ceil((x * 0.8)/5) * 5)
 
                 frontsquat.to_csv('weightsheets\\{}_FrontSquat_percentsheet.csv'.format(cycle), index=False) #assumes weightsheet dir exists
 
