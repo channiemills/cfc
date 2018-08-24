@@ -138,6 +138,7 @@ def process_weightsheet(cycle):
 
             membership = pd.read_excel('AthletesAndMembershipDetails.xlsx') # assumes this is there >.<
             members = membership[['Athlete', 'Athlete Name']]
+            members = members.drop_duplicates()
 
             joined = pd.merge(members, lift_all, how='left')
 
