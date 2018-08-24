@@ -24,7 +24,7 @@ class Login:
         username_field.send_keys(username)
         password_field.send_keys(password)
         browser.find_element_by_name(self.login_fieldname).click()
-        time.sleep(3)
+        time.sleep(5)
 
 
 class Reports:
@@ -67,16 +67,7 @@ class Reports:
         """
         self.open_reports(browser, report_type)
 
-        # Set custom date
-        date = Select(browser.find_element_by_xpath(self.date_xpath))
-        date.select_by_visible_text('Custom')
-        time.sleep(2)
-        # Set from and to dates
-        date_from = browser.find_element_by_xpath(self.date_from_xpath)
-        date_from.send_keys(from_date)
-        date_to = browser.find_element_by_xpath(self.date_to_xpath)
-        date_to.send_keys(to_date)
-        time.sleep(2)
+        self.set_dates(browser, from_date, to_date) #consider making date class properties
 
         # Set component
         # validate component, consider putting this at the start, before logging in
@@ -98,3 +89,40 @@ class Reports:
                 expt = browser.find_element_by_xpath(self.export_xpath)
                 expt.click()
                 time.sleep(1)
+
+
+    def athlete_report(self, browser):
+        athlete_report_id = "WodifyAdminTheme_wt2_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent_wtMainContent_wtReportsTableRecords_ctl02_W_Widgets_UI_wt21_block_wtViewButtonPlaceholder_wt12"
+        program_xpath = "//select[contains(@id, 'Programs')]"
+        browser.find_element_by_link_text("ATHLETES").click()
+        browser.find_element_by_id(athlete_report_id).click()
+        program = Select(browser.find_element_by_xpath(program_xpath))
+        program.select_by_visible_text('CrossFit')
+        time.sleep(2)
+        expt = browser.find_element_by_xpath(self.export_xpath)
+        expt.click()
+        time.sleep(1)
+
+    def attendance_report(self, browser, from_date, to_date):
+        browser.find_element_by_link_text("ATTENDANCE").click()
+        total_attendance_id = "WodifyAdminTheme_wt28_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent_wtMainContent_wtReportsTableRecords_ctl26_W_Widgets_UI_wt21_block_wtViewButtonPlaceholder_wt25"
+        browser.find_element_by_id(total_attendance_id).click()
+
+        self.set_dates(browser, from_date, to_date)
+
+        browser.find_element_by_class_name("Panel_content").click()
+        expt = browser.find_element_by_xpath(self.export_xpath)
+        expt.click()
+        time.sleep(1)
+
+    def set_dates(self, browser, from_date, to_date):
+        # Set custom date
+        date = Select(browser.find_element_by_xpath(self.date_xpath))
+        date.select_by_visible_text('Custom')
+        time.sleep(2)
+        # Set from and to dates
+        date_from = browser.find_element_by_xpath(self.date_from_xpath)
+        date_from.send_keys(from_date)
+        date_to = browser.find_element_by_xpath(self.date_to_xpath)
+        date_to.send_keys(to_date)
+        time.sleep(2)
