@@ -6,7 +6,9 @@ exercises = {'metcon': [
                 'CFC "Mile Test" (CrossFit Commitment)',
                 'Burpee Forever (CrossFit Commitment)',
                 'CFC "Annie" (CrossFit Commitment)',
-                'CFC "Helen" (CrossFit Commitment)'
+                'CFC "Helen" (CrossFit Commitment)',
+                'CFC "Cindy" (CrossFit Commitment)',
+                'CFC "Karen" (CrossFit Commitment)'
 
             ],
              'weightlifting': [

@@ -61,8 +61,16 @@ def process_metcons(cycle):
             metcon = source[['Athlete', 'Result', 'Is As Prescribed', 'Is Rx Plus']]
 
             # Get rid of lowest scores for people that may have tested more than once and sort
-            metcon['Result'] = pd.to_datetime(metcon['Result'], format='%M:%S').dt.time
-            metcon = metcon.sort_values('Result', ascending=True) # because lower is better with time duh
+            if clean_name(exercise) == 'CFCCindy':
+                metcon['Result'] = metcon['Result'].apply(lambda x: x.replace(' + ', '.'))
+                metcon['Result'] = metcon['Result'].apply(pd.to_numeric)
+                metcon = metcon.sort_values('Result', ascending=False)
+                metcon['Result'] = metcon['Result'].astype(str)
+                metcon['Result'] = metcon['Result'].apply(lambda x: x.replace('.', ' + '))
+            else:
+                metcon['Result'] = pd.to_datetime(metcon['Result'], format='%M:%S').dt.time
+                metcon = metcon.sort_values('Result', ascending=True) # because lower is better with time duh
+
             metcon['duplicated'] = metcon.duplicated('Athlete', keep='first')
             metcon = metcon[metcon['duplicated'] == False]
 
@@ -176,6 +184,6 @@ def process_weightsheet(cycle):
 
 #process_lifts('summer18cycle')
 
-#process_metcons('summer18cycle')
+process_metcons('summer18cycle')
 
-process_weightsheet('summer18cycle')
+#process_weightsheet('summer18cycle')
