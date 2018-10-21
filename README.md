@@ -1,11 +1,6 @@
 # cfc
 Scripts to assist crossfit gym with tech needs. More object oriented approach than attempted with [previous wodify project]( https://github.com/channiemills/Wodify).
 
-## attendance.py
-
-Script used to generate list of Gold Start attendance athletes. 
-Top athletes by attendance for a given weightlifting cycle, broken up by gender.
-
 ## wodify.py: Automation
 
 Script used to navigate to wodify and generate performance reports.
@@ -20,7 +15,6 @@ Download management.
 
 #### TODO
 - Improve to specify download directory
-- Specify subdirectory by cycle
 
 ## process.py: Data manipulation
 
@@ -34,4 +28,3 @@ Download management.
 
 ### General TODO
 - Add checks to confirm necessary reports exist before going on to later steps
-- Directory clean up

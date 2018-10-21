@@ -4,14 +4,20 @@ Helper utilities
 
 import glob
 import os
+import pathlib
 import openpyxl
 
 
-# TODO probably want to make download dir a variable
-filenames = glob.glob(r'C:\Users\cmill\Downloads\PerformanceResultsWeightlifting*.xlsx')
-metcons = glob.glob(r'C:\Users\cmill\Downloads\PerformanceResultsMetcon*.xlsx')
-attendance = glob.glob(r'C:\Users\cmill\Downloads\TotalAttendanceHistory.xlsx')
-users = glob.glob(r'C:\Users\cmill\Downloads\Users.xlsx')
+# TODO probably want to change download dir
+
+download_dir = r'C:\Users\cmill\Downloads'
+filenames = glob.glob(rf'{download_dir}\PerformanceResultsWeightlifting*.xlsx')
+metcons = glob.glob(rf'{download_dir}\PerformanceResultsMetcon*.xlsx')
+
+def setup_dirs(cycle):
+    pathlib.Path(rf'{cycle}\{cycle}_results').mkdir(parents=True, exist_ok=True)
+    pathlib.Path(rf'{cycle}\{cycle}_downloads').mkdir(parents=True, exist_ok=True) 
+
 
 def file_rename(filenames, cycle):
     """
@@ -25,8 +31,9 @@ def file_rename(filenames, cycle):
         comp = [col.column for col in header if col.value == 'Component'][0]
         liftname = sheet1[comp+'2'].value
         wb.close()
-        dst = f'{cycle}_{clean_name(liftname)}.xlsx' # will likely need to prepend dir to keep from being moved to wd
+        dst = f'{cycle}\\{cycle}_downloads\\{cycle}_{clean_name(liftname)}.xlsx' # will likely need to prepend dir to keep from being moved to wd
         os.rename(f, dst)
+        print(f'Moved {f} to {dst}')
 
 
 def clean_name(liftname):
@@ -34,6 +41,26 @@ def clean_name(liftname):
     return ''.join(l for l in f if l.isalnum())
 
 
-# file_rename(filenames, 'autumn18')
+def helper_file_rename(cycle):
+    """Rename helper files downloaded from wodify.
+    """
+    helpers = ['TotalAttendanceHistory.xlsx',
+               'Users.xlsx', 'AthletesAndMembershipDetails.xlsx']
+    for helper in helpers:
+        src = rf'{download_dir}\{helper}'
+        dst = f'{cycle}\\{cycle}_downloads\\{cycle}_{helper}'
+        os.rename(src, dst)
+        print(f'Moved {helper} to {os.getcwd()}')
 
-# file_rename(metcons, 'autumn18')
+def main():
+    setup_dirs('testing')
+
+    helper_file_rename('testing')
+
+    file_rename(filenames, 'testing')
+
+    file_rename(metcons, 'testing')
+
+
+if __name__ == '__main__':
+    main()

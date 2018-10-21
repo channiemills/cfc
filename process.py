@@ -7,6 +7,9 @@ from coaches import coaches
 from utilities import clean_name
 
 # for leaderboard, may add param for percentages
+CYCLE='testing'
+DOWNLOADS_DIR=f'{CYCLE}\\{CYCLE}_downloads\\'
+RESULTS_DIR=f'{CYCLE}\\{CYCLE}_results\\'
 
 def lift_leaderboards(cycle, exercise, source):
     # reduce to rows of 1 x 1 (1RM)
@@ -17,7 +20,7 @@ def lift_leaderboards(cycle, exercise, source):
     lift_1r_sort = lift_1r.sort_values('Weight', ascending=False)
 
     # read in gender data and apply
-    users = pd.read_excel(f'{cycle}_Users.xlsx') # TODO - don't assume this will be here?
+    users = pd.read_excel(f'{cycle}\\{cycle}_downloads\\{cycle}_Users.xlsx') # TODO - don't assume this will be here?
 
     lift_1r_sort['Gender'] = lift_1r_sort['Athlete'].map(users.set_index('User')['Gender'])
 
@@ -25,13 +28,15 @@ def lift_leaderboards(cycle, exercise, source):
     lift_1r_female = lift_1r_sort[lift_1r_sort['Gender'] == 'Female']
 
     # Write output
-    lift_1r_male[['Athlete Name', 'Weight']].to_csv(f'{cycle}\\{cycle}_leaderboard_{exercise}_male.csv', index=False)
-    lift_1r_female[['Athlete Name', 'Weight']].to_csv(f'{cycle}\\{cycle}_leaderboard_{exercise}_female.csv', index=False)
+    lift_1r_male[['Athlete Name', 'Weight']].to_csv(
+        f'{cycle}\\{cycle}_results\\{cycle}_leaderboard_{exercise}_male.csv', index=False)
+    lift_1r_female[['Athlete Name', 'Weight']].to_csv(
+        f'{cycle}\\{cycle}_results\\{cycle}_leaderboard_{exercise}_female.csv', index=False)
 
 
 def metcon_leaderboards(cycle):
     for exercise in exercises['metcon']:
-        f = cycle + '_' + clean_name(exercise) + '.xlsx'
+        f = f'{cycle}\\{cycle}_downloads\\{cycle}_{clean_name(exercise)}.xlsx'
         if os.path.isfile(f):
             source = pd.read_excel(f)
 
@@ -55,7 +60,7 @@ def metcon_leaderboards(cycle):
 
 
             # Read in gender data and apply
-            users = pd.read_excel(f'{cycle}_Users.xlsx')
+            users = pd.read_excel(f'{cycle}\\{cycle}_downloads\\{cycle}_Users.xlsx')
 
             # Athlete name
             users['Athlete Name'] = users['First Name'] + ' ' + users['Last Name']
@@ -82,12 +87,14 @@ def metcon_leaderboards(cycle):
                     gender = df.Gender.unique()[0]
                     rx = 'rx' if df['Is As Prescribed'].unique()[0] == True else 'rxp'
                     df[['Athlete', 'Result']].to_csv(
-                        f'{cycle}\\{cycle}_leaderboard_{clean_name(exercise)}_{gender}_{rx}.csv', index=False)
-
+                        f'{cycle}\\{cycle}_results\\{cycle}_leaderboard_{clean_name(exercise)}_{gender}_{rx}.csv', index=False)
+            print(f'{exercise} results written to {os.getcwd()}\{cycle}\{cycle}_results')
+        else:
+            print(f'File does not exist for {exercise}.')
 
 def weightsheets(cycle, start_date, end_date):
     for exercise in exercises['weightlifting']:
-        f = f'{cycle}_{clean_name(exercise)}.xlsx'
+        f = f'{cycle}\\{cycle}_downloads\\{cycle}_{clean_name(exercise)}.xlsx'
         if os.path.isfile(f):
             # read in lift data, will need to loop through
             source = pd.read_excel(f)
@@ -126,7 +133,7 @@ def weightsheets(cycle, start_date, end_date):
 
             # need to make sure everyone that is active is there
 
-            membership = pd.read_excel(f'{cycle}_AthletesAndMembershipDetails.xlsx') # assumes this is there >.<
+            membership = pd.read_excel(f'{cycle}\\{cycle}_downloads\\{cycle}_AthletesAndMembershipDetails.xlsx') # assumes this is there >.<
             members = membership[['Athlete', 'Athlete Name']]
             members = members.drop_duplicates()
 
@@ -155,17 +162,21 @@ def weightsheets(cycle, start_date, end_date):
                     if col != 'Athlete Name':
                         frontsquat[col] = frontsquat[col].apply(lambda x: math.ceil((x * 0.8)/5) * 5)
 
-                frontsquat.to_csv(f'{cycle}\\{cycle}_percentsheet_FrontSquat.csv', index=False) #assumes weightsheet dir exists
+                frontsquat.to_csv(
+                    f'{cycle}\\{cycle}_results\\{cycle}_percentsheet_FrontSquat.csv', index=False) #assumes weightsheet dir exists
 
-            joined_final.to_csv(f'{cycle}\\{cycle}_percentsheet_{clean_name(exercise)}.csv', index=False)
+            joined_final.to_csv(
+                f'{cycle}\\{cycle}_results\\{cycle}_percentsheet_{clean_name(exercise)}.csv', index=False)
+            
+            print(f'{exercise} results written to {os.getcwd()}\{cycle}\{cycle}_results')
 
         else:
-            print('File does not exist for {}.'.format(exercise))
+            print(f'File does not exist for {exercise}.')
 
 
 def attendance_leaderboard(cycle):
-    f = f'{cycle}_TotalAttendanceHistory.xlsx'
-    u = f'{cycle}_Users.xlsx'
+    f = f'{cycle}\\{cycle}_downloads\\{cycle}_TotalAttendanceHistory.xlsx'
+    u = f'{cycle}\\{cycle}_downloads\\{cycle}_Users.xlsx'
     if os.path.isfile(f) and os.path.isfile(u):
         users = pd.read_excel(u)
         att = pd.read_excel(f)
@@ -181,16 +192,18 @@ def attendance_leaderboard(cycle):
         att_female = att_sort[att_sort['Gender'] == 'Female']
 
         # Write output
-        att_male[['Athlete', 'Count']].to_csv(f'{cycle}\\{cycle}_attendance_male.csv', index=False)
-        att_female[['Athlete', 'Count']].to_csv(f'{cycle}\\{cycle}_attendance_female.csv', index=False)
+        att_male[['Athlete', 'Count']].to_csv(
+            f'{cycle}\\{cycle}_results\\{cycle}_attendance_male.csv', index=False)
+        att_female[['Athlete', 'Count']].to_csv(
+            f'{cycle}\\{cycle}_results\\{cycle}_attendance_female.csv', index=False)
 
-        print(f'Attendance for {cycle} printed out to {os.getcwd()}\{cycle}')
+        print(f'Attendance for {cycle} printed out to {os.getcwd()}\{cycle}\{cycle}_results')
     else:
         print(f'File does not exist for either {f} or {u}')
 
 
-# metcon_leaderboards('autumn18')
+attendance_leaderboard('testing')
 
-# weightsheets('autumn18', '10/08/2018', '10/21/2018')
+metcon_leaderboards('testing')
 
-# attendance_leaderboard('autumn18')
+weightsheets('testing', '10/08/2018', '10/21/2018')
