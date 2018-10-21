@@ -10,6 +10,8 @@ import openpyxl
 # TODO probably want to make download dir a variable
 filenames = glob.glob(r'C:\Users\cmill\Downloads\PerformanceResultsWeightlifting*.xlsx')
 metcons = glob.glob(r'C:\Users\cmill\Downloads\PerformanceResultsMetcon*.xlsx')
+attendance = glob.glob(r'C:\Users\cmill\Downloads\TotalAttendanceHistory.xlsx')
+users = glob.glob(r'C:\Users\cmill\Downloads\Users.xlsx')
 
 def file_rename(filenames, cycle):
     """
@@ -22,9 +24,8 @@ def file_rename(filenames, cycle):
         header = list(sheet1.rows)[0]
         comp = [col.column for col in header if col.value == 'Component'][0]
         liftname = sheet1[comp+'2'].value
-        lift = clean_name(liftname)
         wb.close()
-        dst = cycle + '_' + lift + '.xlsx' # will likely need to prepend dir to keep from being moved to wd
+        dst = f'{cycle}_{clean_name(liftname)}.xlsx' # will likely need to prepend dir to keep from being moved to wd
         os.rename(f, dst)
 
 
@@ -33,6 +34,6 @@ def clean_name(liftname):
     return ''.join(l for l in f if l.isalnum())
 
 
-file_rename(filenames, 'summer18cycle_weightsheets')
+# file_rename(filenames, 'autumn18')
 
-#file_rename(metcons, 'summer18cycle')
+# file_rename(metcons, 'autumn18')
