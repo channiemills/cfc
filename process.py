@@ -43,8 +43,8 @@ def process_lifts(cycle):
             lift_1r_female = lift_1r_sort[lift_1r_sort['Gender'] == 'Female']
 
             # Write output
-            lift_1r_male[['Athlete Name', 'Weight']].to_csv('{}_{}_male.csv'.format(cycle, exercise), index=False)
-            lift_1r_female[['Athlete Name', 'Weight']].to_csv('{}_{}_female.csv'.format(cycle, exercise), index=False)
+            lift_1r_male[['Athlete Name', 'Weight']].to_csv(f'{cycle}_lift_{exercise}_male.csv', index=False)
+            lift_1r_female[['Athlete Name', 'Weight']].to_csv(f'{cycle}_lift_{exercise}_female.csv', index=False)
 
         else:
             print('File does not exist for {}.'.format(exercise))
@@ -100,9 +100,9 @@ def process_metcons(cycle):
 
             for df in metcon_dfs:
                 if len(df) > 0:
-                    g = df.Gender.unique()[0]
-                    r = 'rx' if df['Is As Prescribed'].unique()[0] == True else 'rxp'
-                    df[['Athlete', 'Result']].to_csv('{}_{}_{}_{}.csv'.format(cycle, clean_name(exercise), g, r), index=False)
+                    gender = df.Gender.unique()[0]
+                    rx = 'rx' if df['Is As Prescribed'].unique()[0] == True else 'rxp'
+                    df[['Athlete', 'Result']].to_csv(f'{cycle}_metcon_{clean_name(exercise)}_{gender}_{rx}.csv', index=False)
 
 
 def process_weightsheet(cycle):
@@ -158,15 +158,16 @@ def process_weightsheet(cycle):
             roster_final = roster_sort[['Athlete Name', 'Weight']]
 
             # add pcts
-            pcts = [i / 100.0 for i in range(40, 105, 5)]
+            low_pcts = [i / 100.0 for i in range(40, 70, 5)]
+            high_pcts = [i / 1000.0 for i in range(675, 1025, 25)]
+            pcts = low_pcts + high_pcts
 
             roster_final = roster_final.fillna(0)
 
             for pct in pcts:
-                roster_final[str(round(pct*100))+'%'] = roster_final['Weight'].apply(lambda x: math.ceil((x * pct)/5) * 5) #math.ceil((joined_all['Weight'] * pct)/5) * 5
+                roster_final[str(round(pct*100,1))+'%'] = roster_final['Weight'].apply(lambda x: math.ceil((x * pct)/5) * 5)
 
             roster_final = roster_final.drop('Weight', axis=1)
-            # add something special for if front squat, use back squat file and take 80 pct of it
 
             if clean_name(exercise) == 'BackSquat':
                 frontsquat = roster_final.copy()
@@ -174,16 +175,48 @@ def process_weightsheet(cycle):
                     if col != 'Athlete Name':
                         frontsquat[col] = frontsquat[col].apply(lambda x: math.ceil((x * 0.8)/5) * 5)
 
-                frontsquat.to_csv('weightsheets\\{}_FrontSquat_percentsheet.csv'.format(cycle), index=False) #assumes weightsheet dir exists
+                frontsquat.to_csv(f'{cycle}\\{cycle}_percentsheet_FrontSquat.csv', index=False) #assumes weightsheet dir exists
 
-            roster_final.to_csv('weightsheets\\{}_{}_percentsheet.csv'.format(cycle, clean_name(exercise)), index=False)
+            roster_final.to_csv(f'{cycle}\\{cycle}_percentsheet_{clean_name(exercise)}.csv', index=False)
 
         else:
             print('File does not exist for {}.'.format(exercise))
 
 
+def process_attendance(cycle):
+    f = f'{cycle}_TotalAttendanceHistory.xlsx'
+    u = f'{cycle}_Users.xlsx'
+    if os.path.isfile(f) and os.path.isfile(u):
+        users = pd.read_excel(u)
+        att = pd.read_excel(f)
+
+        # Reduce to necessary columns
+        # att_cycle_users = att_cycle[['User', 'Athlete']]
+
+        # Group by user and sort based on attendance descending
+        att_cycle_users = pd.DataFrame({'Count': att.groupby(['User', 'Athlete']).size()}).reset_index()
+        att_sort = att_cycle_users.sort_values('Count', ascending=False)
+
+        # Look up gender
+        att_sort['Gender'] = att_sort['User'].map(users.set_index('User')['Gender'])
+
+        att_male = att_sort[att_sort['Gender'] == 'Male']
+        att_female = att_sort[att_sort['Gender'] == 'Female']
+
+        # Write output
+        att_male[['Athlete', 'Count']].to_csv(f'{cycle}\\{cycle}_attendance_male.csv', index=False)
+        att_female[['Athlete', 'Count']].to_csv(f'{cycle}\\{cycle}_attendance_female.csv', index=False)
+
+        print(f'Attendance for {cycle} printed out to {os.getcwd()}\{cycle}')
+    else:
+        print(f'File does not exist for either {f} or {u}')
+
+
 #process_lifts('summer18cycle')
 
-process_metcons('summer18cycle')
+#process_metcons('summer18cycle')
 
-#process_weightsheet('summer18cycle')
+# process_weightsheet('summer18cycle')
+
+
+process_attendance('autumn18')

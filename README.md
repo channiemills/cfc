@@ -27,7 +27,6 @@ Download management.
  Data manipulation for leaderboards (metcon and weightlifting) as well as weightlifting percentages.
 
 #### TODO
-- add attendance as a function here
 - Encapsulate code for simpler function definitions. Definitely can reduce duplicate code, particularly in weightsheets.
   - Gender stuff can be simplified to take one df and return male and female versions
 - Wrap all in a Windows console or executable that users can access and interact with easily. 
