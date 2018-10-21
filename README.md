@@ -14,7 +14,7 @@ Script used to navigate to wodify and generate performance reports.
 Download management.
 
 #### TODO
-- Improve to specify download directory
+- Improve to specify default download directory for chrome?
 
 ## process.py: Data manipulation
 
@@ -28,3 +28,7 @@ Download management.
 
 ### General TODO
 - Add checks to confirm necessary reports exist before going on to later steps
+  -  before process.py
+  - perhaps before utilities
+- Current state, wodify.py gets all needed reports except user report. 
+  - BUG : must update call for user report in wodify.py so that can be run standalone and in sequence with other reports

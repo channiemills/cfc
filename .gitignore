@@ -3,6 +3,7 @@
 .idea/
 __pycache__/
 wodify_variables.py
+coaches.py
 
 
 # Test downloads # 
