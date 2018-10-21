@@ -38,7 +38,7 @@ class Reports:
     export_xpath = "//a[contains(@id, 'Export')]"
 
     whitespace_id = "WodifyAdminTheme_wt14_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent_SilkUIFramework_wt84_block_wtColumn2"
-    whitespace_id_metcon = "WodifyAdminTheme_wt51_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent"
+    whitespace_id_metcon = "WodifyAdminTheme_wt51_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent_SilkUIFramework_wt84_block_wtColumn2"
 
     def open_reports(self, browser, report_type):
         """

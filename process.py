@@ -7,58 +7,37 @@ from coaches import coaches
 from utilities import clean_name
 
 # for leaderboard, may add param for percentages
-# TODO - consider pulling last 6 months, then filtering to testing period for leaderboard then can use one pull
 
-def process_lifts(cycle):
-    for exercise in exercises['weightlifting']:
-        f = cycle + '_' + exercise + '.xlsx'
-        if os.path.isfile(f):
-            # read in lift data, will need to loop through
-            source = pd.read_excel(f)
+def lift_leaderboards(cycle, exercise, source):
+    # reduce to rows of 1 x 1 (1RM)
+    lift_1r = source[source['Scheme'] == '1 x 1']
 
-            # reduce to useful cols
-            lift = source[['Athlete', 'Athlete Name', 'Result']]
+    # Get rid of lowest scores for people that may have tested more than once and sort
+    lift_1r = lift_1r.groupby('Athlete', group_keys=False).apply(lambda x: x.loc[x.Weight.idxmax()])
+    lift_1r_sort = lift_1r.sort_values('Weight', ascending=False)
 
-            # split out rep scheme from weight
-            lift['Scheme'], lift['Weight'] = lift['Result'].str.split(' @ ', 1).str
+    # read in gender data and apply
+    users = pd.read_excel(f'{cycle}_Users.xlsx') # TODO - don't assume this will be here?
 
-            # reduce to rows of 1 x 1 (1RM)
-            lift_1r = lift[lift['Scheme'] == '1 x 1']
+    lift_1r_sort['Gender'] = lift_1r_sort['Athlete'].map(users.set_index('User')['Gender'])
 
-            # strip 'lbs' from weight column and change to int
-            lift_1r['Weight'] = lift_1r['Weight'].map(lambda x: x.rstrip(' lbs'))
-            lift_1r['Weight'] = lift_1r['Weight'].apply(pd.to_numeric)
+    lift_1r_male = lift_1r_sort[lift_1r_sort['Gender'] == 'Male']
+    lift_1r_female = lift_1r_sort[lift_1r_sort['Gender'] == 'Female']
 
-            # Get rid of lowest scores for people that may have tested more than once and sort
-            lift_1r = lift_1r.groupby('Athlete', group_keys=False).apply(lambda x: x.loc[x.Weight.idxmax()])
-            lift_1r_sort = lift_1r.sort_values('Weight', ascending=False)
-
-            # read in gender data and apply
-            users = pd.read_excel('users.xlsx') # TODO - don't assume this will be here?
-
-            # Look up gender
-            lift_1r_sort['Gender'] = lift_1r_sort['Athlete'].map(users.set_index('User')['Gender'])
-
-            lift_1r_male = lift_1r_sort[lift_1r_sort['Gender'] == 'Male']
-            lift_1r_female = lift_1r_sort[lift_1r_sort['Gender'] == 'Female']
-
-            # Write output
-            lift_1r_male[['Athlete Name', 'Weight']].to_csv('{}_{}_male.csv'.format(cycle, exercise), index=False)
-            lift_1r_female[['Athlete Name', 'Weight']].to_csv('{}_{}_female.csv'.format(cycle, exercise), index=False)
-
-        else:
-            print('File does not exist for {}.'.format(exercise))
+    # Write output
+    lift_1r_male[['Athlete Name', 'Weight']].to_csv(f'{cycle}\\{cycle}_leaderboard_{exercise}_male.csv', index=False)
+    lift_1r_female[['Athlete Name', 'Weight']].to_csv(f'{cycle}\\{cycle}_leaderboard_{exercise}_female.csv', index=False)
 
 
-def process_metcons(cycle):
+def metcon_leaderboards(cycle):
     for exercise in exercises['metcon']:
         f = cycle + '_' + clean_name(exercise) + '.xlsx'
         if os.path.isfile(f):
-            # read in metcon data
             source = pd.read_excel(f)
 
             # reduce to useful columns
-            metcon = source[['Athlete', 'Result', 'Is As Prescribed', 'Is Rx Plus']]
+            metcon = source[['Athlete', 'Result', 'Is As Prescribed', 'Is Rx Plus']][
+                ~source['Athlete'].isin(coaches)]
 
             # Get rid of lowest scores for people that may have tested more than once and sort
             if clean_name(exercise) == 'CFCCindy':
@@ -76,7 +55,7 @@ def process_metcons(cycle):
 
 
             # Read in gender data and apply
-            users = pd.read_excel('users.xlsx')
+            users = pd.read_excel(f'{cycle}_Users.xlsx')
 
             # Athlete name
             users['Athlete Name'] = users['First Name'] + ' ' + users['Last Name']
@@ -100,20 +79,21 @@ def process_metcons(cycle):
 
             for df in metcon_dfs:
                 if len(df) > 0:
-                    g = df.Gender.unique()[0]
-                    r = 'rx' if df['Is As Prescribed'].unique()[0] == True else 'rxp'
-                    df[['Athlete', 'Result']].to_csv('{}_{}_{}_{}.csv'.format(cycle, clean_name(exercise), g, r), index=False)
+                    gender = df.Gender.unique()[0]
+                    rx = 'rx' if df['Is As Prescribed'].unique()[0] == True else 'rxp'
+                    df[['Athlete', 'Result']].to_csv(
+                        f'{cycle}\\{cycle}_leaderboard_{clean_name(exercise)}_{gender}_{rx}.csv', index=False)
 
 
-def process_weightsheet(cycle):
+def weightsheets(cycle, start_date, end_date):
     for exercise in exercises['weightlifting']:
-        f = cycle + '_' + 'weightsheets_' + clean_name(exercise) + '.xlsx'
+        f = f'{cycle}_{clean_name(exercise)}.xlsx'
         if os.path.isfile(f):
             # read in lift data, will need to loop through
             source = pd.read_excel(f)
 
-            # reduce to useful cols
-            lift = source[['Date', 'Athlete', 'Athlete Name', 'Result']]
+            # reduce to useful cols and remove coaches
+            lift = source[['Date', 'Athlete', 'Athlete Name', 'Result']][~source['Athlete Name'].isin(coaches)]
 
             # split out rep scheme from weight
             lift['Scheme'], lift['Weight'] = lift['Result'].str.split(' @ ', 1).str
@@ -122,14 +102,16 @@ def process_weightsheet(cycle):
             lift['Weight'] = lift['Weight'].map(lambda x: x.rstrip(' lbs'))
             lift['Weight'] = lift['Weight'].apply(pd.to_numeric)
 
-            # pull out testing dates '07/30/2018', '08/12/2018'
-            testing_ind = (lift['Date'] >= '07/30/2018') & (lift['Date'] <= '08/12/2018') # TODO - don't hardcode
+            testing_ind = (lift['Date'] >= start_date) & (lift['Date'] <= end_date)
             lift_testing = lift.loc[testing_ind]
+
+            # get lift leaderboards
+            lift_leaderboards(cycle, exercise, lift_testing)
+
             lift_sixmo = lift.loc[~testing_ind]
 
             # reduce to rows of 1 x 1 (1RM) for teseters
             lift_1r = lift_testing[lift_testing['Scheme'] == '1 x 1']
-
 ## stuff i will have to do for both dfs
             # Get rid of lowest scores for people that may have tested more than once and sort
             lift_1r = lift_1r.groupby('Athlete', group_keys=False).apply(lambda x: x.loc[x.Weight.idxmax()])
@@ -144,46 +126,71 @@ def process_weightsheet(cycle):
 
             # need to make sure everyone that is active is there
 
-            membership = pd.read_excel('AthletesAndMembershipDetails.xlsx') # assumes this is there >.<
+            membership = pd.read_excel(f'{cycle}_AthletesAndMembershipDetails.xlsx') # assumes this is there >.<
             members = membership[['Athlete', 'Athlete Name']]
             members = members.drop_duplicates()
 
             joined = pd.merge(members, lift_all, how='left')
 
-            roster = joined[~joined['Athlete Name'].isin(coaches)]
-
             # get rid of unnecessary cols
-            roster['Athlete Name'] = roster['Athlete Name'].str.upper()
-            roster_sort = roster.sort_values('Athlete Name')
-            roster_final = roster_sort[['Athlete Name', 'Weight']]
+            joined['Athlete Name'] = joined['Athlete Name'].str.upper()
+            joined_sort = joined.sort_values('Athlete Name')
+            joined_final = joined_sort[['Athlete Name', 'Weight']]
 
             # add pcts
-            pcts = [i / 100.0 for i in range(40, 105, 5)]
+            low_pcts = [i / 100.0 for i in range(40, 70, 5)]
+            high_pcts = [i / 1000.0 for i in range(675, 1025, 25)]
+            pcts = low_pcts + high_pcts
 
-            roster_final = roster_final.fillna(0)
+            joined_final = joined_final.fillna(0)
 
             for pct in pcts:
-                roster_final[str(round(pct*100))+'%'] = roster_final['Weight'].apply(lambda x: math.ceil((x * pct)/5) * 5) #math.ceil((joined_all['Weight'] * pct)/5) * 5
+                joined_final[str(round(pct*100,1))+'%'] = joined_final['Weight'].apply(lambda x: math.ceil((x * pct)/5) * 5)
 
-            roster_final = roster_final.drop('Weight', axis=1)
-            # add something special for if front squat, use back squat file and take 80 pct of it
+            joined_final = joined_final.drop('Weight', axis=1)
 
             if clean_name(exercise) == 'BackSquat':
-                frontsquat = roster_final.copy()
+                frontsquat = joined_final.copy()
                 for col in list(frontsquat):
                     if col != 'Athlete Name':
                         frontsquat[col] = frontsquat[col].apply(lambda x: math.ceil((x * 0.8)/5) * 5)
 
-                frontsquat.to_csv('weightsheets\\{}_FrontSquat_percentsheet.csv'.format(cycle), index=False) #assumes weightsheet dir exists
+                frontsquat.to_csv(f'{cycle}\\{cycle}_percentsheet_FrontSquat.csv', index=False) #assumes weightsheet dir exists
 
-            roster_final.to_csv('weightsheets\\{}_{}_percentsheet.csv'.format(cycle, clean_name(exercise)), index=False)
+            joined_final.to_csv(f'{cycle}\\{cycle}_percentsheet_{clean_name(exercise)}.csv', index=False)
 
         else:
             print('File does not exist for {}.'.format(exercise))
 
 
-#process_lifts('summer18cycle')
+def attendance_leaderboard(cycle):
+    f = f'{cycle}_TotalAttendanceHistory.xlsx'
+    u = f'{cycle}_Users.xlsx'
+    if os.path.isfile(f) and os.path.isfile(u):
+        users = pd.read_excel(u)
+        att = pd.read_excel(f)
 
-process_metcons('summer18cycle')
+        # Group by user and sort based on attendance descending
+        att_cycle_users = pd.DataFrame({'Count': att.groupby(['User', 'Athlete']).size()}).reset_index()
+        att_sort = att_cycle_users.sort_values('Count', ascending=False)
 
-#process_weightsheet('summer18cycle')
+        # Look up gender
+        att_sort['Gender'] = att_sort['User'].map(users.set_index('User')['Gender'])
+
+        att_male = att_sort[att_sort['Gender'] == 'Male']
+        att_female = att_sort[att_sort['Gender'] == 'Female']
+
+        # Write output
+        att_male[['Athlete', 'Count']].to_csv(f'{cycle}\\{cycle}_attendance_male.csv', index=False)
+        att_female[['Athlete', 'Count']].to_csv(f'{cycle}\\{cycle}_attendance_female.csv', index=False)
+
+        print(f'Attendance for {cycle} printed out to {os.getcwd()}\{cycle}')
+    else:
+        print(f'File does not exist for either {f} or {u}')
+
+
+# metcon_leaderboards('autumn18')
+
+# weightsheets('autumn18', '10/08/2018', '10/21/2018')
+
+# attendance_leaderboard('autumn18')
