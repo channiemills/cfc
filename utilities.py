@@ -7,16 +7,20 @@ import os
 import pathlib
 import openpyxl
 
+from conf_vars import CYCLE, DOWNLOADS_DIR, RESULTS_DIR
+
 
 # TODO probably want to change download dir
 
-download_dir = r'C:\Users\cmill\Downloads'
-filenames = glob.glob(rf'{download_dir}\PerformanceResultsWeightlifting*.xlsx')
-metcons = glob.glob(rf'{download_dir}\PerformanceResultsMetcon*.xlsx')
+CHROME_DOWNLOADS = r'C:\Users\cmill\Downloads'
+filenames = glob.glob(rf'{CHROME_DOWNLOADS}\PerformanceResultsWeightlifting*.xlsx')
+metcons = glob.glob(rf'{CHROME_DOWNLOADS}\PerformanceResultsMetcon*.xlsx')
 
-def setup_dirs(cycle):
-    pathlib.Path(rf'{cycle}\{cycle}_results').mkdir(parents=True, exist_ok=True)
-    pathlib.Path(rf'{cycle}\{cycle}_downloads').mkdir(parents=True, exist_ok=True) 
+def setup_dirs():
+    """Create directories for cycle downloads and results if DNE
+    """
+    pathlib.Path(RESULTS_DIR).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(DOWNLOADS_DIR).mkdir(parents=True, exist_ok=True) 
 
 
 def file_rename(filenames, cycle):
@@ -35,7 +39,7 @@ def file_rename(filenames, cycle):
         comp = [col.column for col in header if col.value == 'Component'][0]
         liftname = sheet1[comp+'2'].value
         wb.close()
-        dst = f'{cycle}\\{cycle}_downloads\\{cycle}_{clean_name(liftname)}.xlsx'
+        dst = f'{DOWNLOADS_DIR}\\{cycle}_{clean_name(liftname)}.xlsx'
         os.rename(f, dst)
         print(f'Moved {f} to {dst}')
 
@@ -68,22 +72,19 @@ def helper_file_rename(cycle):
     helpers = ['TotalAttendanceHistory.xlsx',
                'Users.xlsx', 'AthletesAndMembershipDetails.xlsx']
     for helper in helpers:
-        src = rf'{download_dir}\{helper}'
-        dst = f'{cycle}\\{cycle}_downloads\\{cycle}_{helper}'
+        src = rf'{CHROME_DOWNLOADS}\{helper}'
+        dst = f'{DOWNLOADS_DIR}\\{cycle}_{helper}'
         os.rename(src, dst)
-        print(f'Moved {helper} to {os.getcwd()}')
+        print(f'Moved {helper} to {DOWNLOADS_DIR}')
 
 
 def main():
     """Main function. Runs all in this file.
     """
-    setup_dirs('testing')
-
-    helper_file_rename('testing')
-
-    file_rename(filenames, 'testing')
-
-    file_rename(metcons, 'testing')
+    setup_dirs()
+    helper_file_rename(CYCLE)
+    file_rename(filenames, CYCLE)
+    file_rename(metcons, CYCLE)
 
 
 if __name__ == '__main__':

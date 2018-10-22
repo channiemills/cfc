@@ -1,14 +1,16 @@
-import pandas as pd
+"""
+Processes files downloaded from wodify and generate results.
+"""
+
 import os.path
 import math
+import pandas as pd
 
 from exercises import exercises
 from coaches import coaches
 from utilities import clean_name
 
-CYCLE = 'testing'
-DOWNLOADS_DIR = f'{CYCLE}\\{CYCLE}_downloads'
-RESULTS_DIR = f'{CYCLE}\\{CYCLE}_results'
+from conf_vars import CYCLE, DOWNLOADS_DIR, RESULTS_DIR, TESTING_START, TESTING_END
 
 
 def lift_leaderboards(cycle, exercise, source):
@@ -36,15 +38,11 @@ def lift_leaderboards(cycle, exercise, source):
     lift_1r = lift_1r.groupby('Athlete', group_keys=False).apply(lambda x: x.loc[x.Weight.idxmax()])
     lift_1r_sort = lift_1r.sort_values('Weight', ascending=False)
 
-    # read in gender data and apply
-    users = pd.read_excel(f'{DOWNLOADS_DIR}\\{cycle}_Users.xlsx') # TODO - don't assume this will be here?
-
+    users = pd.read_excel(f'{DOWNLOADS_DIR}\\{cycle}_Users.xlsx')
     lift_1r_sort['Gender'] = lift_1r_sort['Athlete'].map(users.set_index('User')['Gender'])
-
     lift_1r_male = lift_1r_sort[lift_1r_sort['Gender'] == 'Male']
     lift_1r_female = lift_1r_sort[lift_1r_sort['Gender'] == 'Female']
 
-    # Write output
     lift_1r_male[['Athlete Name', 'Weight']].to_csv(
         f'{RESULTS_DIR}\\{cycle}_leaderboard_{exercise}_male.csv', index=False)
     lift_1r_female[['Athlete Name', 'Weight']].to_csv(
@@ -86,7 +84,7 @@ def metcon_leaderboards(cycle):
                 metcon = metcon.sort_values('Result', ascending=True) # because lower is better with time duh
 
             metcon['duplicated'] = metcon.duplicated('Athlete', keep='first')
-            metcon = metcon[metcon['duplicated'] == False]
+            metcon = metcon[~metcon['duplicated']]
 
 
             # Read in gender data and apply
@@ -99,8 +97,8 @@ def metcon_leaderboards(cycle):
             metcon['Gender'] = metcon['Athlete'].map(users.set_index('Athlete Name')['Gender'])
 
             # Break out Rx and Rx+
-            metcon_rx = metcon[metcon['Is As Prescribed'] == True]
-            metcon_rxp = metcon[metcon['Is Rx Plus'] == True]
+            metcon_rx = metcon[metcon['Is As Prescribed']]
+            metcon_rxp = metcon[metcon['Is Rx Plus']]
 
             # Split on gender
             metcon_rx_female = metcon_rx[metcon_rx['Gender'] == 'Female']
@@ -145,7 +143,8 @@ def weightsheets(cycle, start_date, end_date):
         if os.path.isfile(f):
             source = pd.read_excel(f)
 
-            lift = source[['Date', 'Athlete', 'Athlete Name', 'Result']][~source['Athlete Name'].isin(coaches)]
+            lift = source[['Date', 'Athlete', 'Athlete Name', 'Result']][
+                ~source['Athlete Name'].isin(coaches)]
 
             lift['Scheme'], lift['Weight'] = lift['Result'].str.split(' @ ', 1).str
 
@@ -208,7 +207,7 @@ def weightsheets(cycle, start_date, end_date):
 
             joined_final.to_csv(
                 f'{RESULTS_DIR}\\{cycle}_percentsheet_{clean_name(exercise)}.csv', index=False)
-          
+         
             print(f'{exercise} results written to {RESULTS_DIR}')
 
         else:
@@ -252,8 +251,14 @@ def attendance_leaderboard(cycle):
         print(f'File does not exist for either {f} or {u}')
 
 
-# attendance_leaderboard(CYCLE)
+def main():
+    """Main function. Calculates attendance, metcon and weight leaderboards,
+    and weightshet percentages for current cycle.
+    """
+    attendance_leaderboard(CYCLE)
+    metcon_leaderboards(CYCLE)
+    weightsheets(CYCLE, TESTING_START, TESTING_END)
 
-# metcon_leaderboards(CYCLE)
 
-weightsheets(CYCLE, '10/08/2018', '10/21/2018')
+if __name__ == '__main__':
+    main()
