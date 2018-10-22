@@ -6,13 +6,29 @@ from exercises import exercises
 from coaches import coaches
 from utilities import clean_name
 
-# for leaderboard, may add param for percentages
 CYCLE = 'testing'
 DOWNLOADS_DIR = f'{CYCLE}\\{CYCLE}_downloads'
 RESULTS_DIR = f'{CYCLE}\\{CYCLE}_results'
 
 
 def lift_leaderboards(cycle, exercise, source):
+    """Leaderboard for top lifters
+    PARAMETERS
+    ----------
+    cycle : str
+        Name of cycle, will prefix filename
+    exercise : str
+        Name of exercise, will be included in filename
+    source : df
+        Dataframe of performance during testing period
+    RETURNS
+    -------
+    EXPORTS
+    -------
+    dataframes : csv
+        Dataframe of Athlete and Weight for the exercise,
+        sorted by top performance, one per gender.
+    """
     # reduce to rows of 1 x 1 (1RM)
     lift_1r = source[source['Scheme'] == '1 x 1']
 
@@ -36,6 +52,19 @@ def lift_leaderboards(cycle, exercise, source):
 
 
 def metcon_leaderboards(cycle):
+    """Leaderboard for top metcon athletes
+    PARAMETERS
+    ----------
+    cycle : str
+        Name of cycle, will prefix filename
+    RETURNS
+    -------
+    EXPORTS
+    -------
+    dataframes : csv
+        Dataframe of Athlete and performance for the metcon,
+        sorted by top performance, one per gender per rx.
+    """
     for exercise in exercises['metcon']:
         f = f'{DOWNLOADS_DIR}\\{cycle}_{clean_name(exercise)}.xlsx'
         if os.path.isfile(f):
@@ -95,19 +124,31 @@ def metcon_leaderboards(cycle):
 
 
 def weightsheets(cycle, start_date, end_date):
+    """Weightsheets for all active members
+    PARAMETERS
+    ----------
+    cycle : str
+        Name of cycle, will prefix filename
+    start_date : str
+        Testing start date, used to filter for leaderboard
+    end_date : df
+        Testing end date, used to filter for leaderboard
+    RETURNS
+    -------
+    EXPORTS
+    -------
+    dataframes : csv
+        Dataframe of percentsheets for each exercise by athlete.
+    """
     for exercise in exercises['weightlifting']:
         f = f'{DOWNLOADS_DIR}\\{cycle}_{clean_name(exercise)}.xlsx'
         if os.path.isfile(f):
-            # read in lift data, will need to loop through
             source = pd.read_excel(f)
 
-            # reduce to useful cols and remove coaches
             lift = source[['Date', 'Athlete', 'Athlete Name', 'Result']][~source['Athlete Name'].isin(coaches)]
 
-            # split out rep scheme from weight
             lift['Scheme'], lift['Weight'] = lift['Result'].str.split(' @ ', 1).str
 
-            # strip 'lbs' from weight column and change to int
             lift['Weight'] = lift['Weight'].map(lambda x: x.rstrip(' lbs'))
             lift['Weight'] = lift['Weight'].apply(pd.to_numeric)
 
@@ -141,12 +182,10 @@ def weightsheets(cycle, start_date, end_date):
 
             joined = pd.merge(members, lift_all, how='left')
 
-            # get rid of unnecessary cols
             joined['Athlete Name'] = joined['Athlete Name'].str.upper()
             joined_sort = joined.sort_values('Athlete Name')
             joined_final = joined_sort[['Athlete Name', 'Weight']]
 
-            # add pcts
             low_pcts = [i / 100.0 for i in range(40, 70, 5)]
             high_pcts = [i / 1000.0 for i in range(675, 1025, 25)]
             pcts = low_pcts + high_pcts
@@ -154,7 +193,7 @@ def weightsheets(cycle, start_date, end_date):
             joined_final = joined_final.fillna(0)
 
             for pct in pcts:
-                joined_final[str(round(pct*100,1))+'%'] = joined_final['Weight'].apply(lambda x: math.ceil((x * pct)/5) * 5)
+                joined_final[str(round(pct*100, 1))+'%'] = joined_final['Weight'].apply(lambda x: math.ceil((x * pct)/5) * 5)
 
             joined_final = joined_final.drop('Weight', axis=1)
 
@@ -165,11 +204,11 @@ def weightsheets(cycle, start_date, end_date):
                         frontsquat[col] = frontsquat[col].apply(lambda x: math.ceil((x * 0.8)/5) * 5)
 
                 frontsquat.to_csv(
-                    f'{RESULTS_DIR}\\{cycle}_percentsheet_FrontSquat.csv', index=False) #assumes weightsheet dir exists
+                    f'{RESULTS_DIR}\\{cycle}_percentsheet_FrontSquat.csv', index=False)
 
             joined_final.to_csv(
                 f'{RESULTS_DIR}\\{cycle}_percentsheet_{clean_name(exercise)}.csv', index=False)
-            
+          
             print(f'{exercise} results written to {RESULTS_DIR}')
 
         else:
@@ -177,6 +216,18 @@ def weightsheets(cycle, start_date, end_date):
 
 
 def attendance_leaderboard(cycle):
+    """Attendance leaderboard for cycle
+    PARAMETERS
+    ----------
+    cycle : str
+        Name of cycle, will be on filenames
+    RETURNS
+    -------
+    EXPORTS
+    -------
+    dataframes : csv
+        Attendance sorted by most, one for each gender
+    """
     f = f'{DOWNLOADS_DIR}\\{cycle}_TotalAttendanceHistory.xlsx'
     u = f'{DOWNLOADS_DIR}\\{cycle}_Users.xlsx'
     if os.path.isfile(f) and os.path.isfile(u):
@@ -187,13 +238,10 @@ def attendance_leaderboard(cycle):
         att_cycle_users = pd.DataFrame({'Count': att.groupby(['User', 'Athlete']).size()}).reset_index()
         att_sort = att_cycle_users.sort_values('Count', ascending=False)
 
-        # Look up gender
         att_sort['Gender'] = att_sort['User'].map(users.set_index('User')['Gender'])
-
         att_male = att_sort[att_sort['Gender'] == 'Male']
         att_female = att_sort[att_sort['Gender'] == 'Female']
 
-        # Write output
         att_male[['Athlete', 'Count']].to_csv(
             f'{RESULTS_DIR}\\{cycle}_attendance_male.csv', index=False)
         att_female[['Athlete', 'Count']].to_csv(
@@ -204,8 +252,8 @@ def attendance_leaderboard(cycle):
         print(f'File does not exist for either {f} or {u}')
 
 
-attendance_leaderboard(CYCLE)
+# attendance_leaderboard(CYCLE)
 
-metcon_leaderboards(CYCLE)
+# metcon_leaderboards(CYCLE)
 
 weightsheets(CYCLE, '10/08/2018', '10/21/2018')

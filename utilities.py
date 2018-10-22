@@ -20,9 +20,13 @@ def setup_dirs(cycle):
 
 
 def file_rename(filenames, cycle):
-    """
-    Opens files and renames them based on content
-    :return: 
+    """Opens files and renames them based on content
+    PARAMETERS
+    ----------
+    filenames : list
+        Filenames matching specific format
+    cycle : str
+        Name of cycle, will be on filenames
     """
     for f in filenames:
         wb = openpyxl.load_workbook(f)
@@ -31,18 +35,35 @@ def file_rename(filenames, cycle):
         comp = [col.column for col in header if col.value == 'Component'][0]
         liftname = sheet1[comp+'2'].value
         wb.close()
-        dst = f'{cycle}\\{cycle}_downloads\\{cycle}_{clean_name(liftname)}.xlsx' # will likely need to prepend dir to keep from being moved to wd
+        dst = f'{cycle}\\{cycle}_downloads\\{cycle}_{clean_name(liftname)}.xlsx'
         os.rename(f, dst)
         print(f'Moved {f} to {dst}')
 
 
 def clean_name(liftname):
+    """Strips unnecessary text from exercise name
+    PARAMETERS
+    ----------
+    liftname : str
+        Name of lift including extra text
+    RETURNS
+    -------
+    cleaned_name : str
+        Name without unnecessary text and spaces
+    """
     f = liftname.rsplit(" (CrossFit Commitment)")[0]
     return ''.join(l for l in f if l.isalnum())
 
 
 def helper_file_rename(cycle):
-    """Rename helper files downloaded from wodify.
+    """Rename helper files downloaded from wodify
+    and relocates them to directories created in setup_dirs.
+    PARAMETERS
+    ----------
+    cycle : str
+        Name of cycle, will be on filenames
+    RETURNS
+    -------
     """
     helpers = ['TotalAttendanceHistory.xlsx',
                'Users.xlsx', 'AthletesAndMembershipDetails.xlsx']
@@ -52,7 +73,10 @@ def helper_file_rename(cycle):
         os.rename(src, dst)
         print(f'Moved {helper} to {os.getcwd()}')
 
+
 def main():
+    """Main function. Runs all in this file.
+    """
     setup_dirs('testing')
 
     helper_file_rename('testing')
