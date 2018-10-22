@@ -6,7 +6,7 @@ Scripts to assist crossfit gym with tech needs. More object oriented approach th
 Script used to navigate to wodify and generate performance reports.
 
 #### TODO
-- Replace sleep steps with a more robust wait method
+- Replace sleep steps in elements.py with a more robust wait method
 - Write out sample executions. Consider workflow options
 
 ## utilities.py: File manipulation
@@ -32,3 +32,16 @@ Download management.
   - perhaps before utilities
 - Current state, wodify.py gets all needed reports except user report. 
   - BUG : must update call for user report in wodify.py so that can be run standalone and in sequence with other reports
+
+### Current Workflow
+- Set cycle name and testing window in conf_vars.py
+- Update wodify.py to reflect:
+  - testing window
+  - previous cycle dates (for attendance)
+  - weightlifting history (testing_start - 6 months, testing_end)
+  - TODO: move these into conf_vars
+- Run wodify.py for everything but users
+- Run wodify.py again for users (known bug)
+- Run utilities.py
+- Run process.py
+ 
