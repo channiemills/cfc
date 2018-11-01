@@ -32,7 +32,8 @@ def lift_leaderboards(cycle, exercise, source):
         sorted by top performance, one per gender.
     """
     # reduce to rows of 1 x 1 (1RM)
-    lift_1r = source[source['Scheme'] == '1 x 1']
+    lift_1r = source[source['Scheme'] == '1 x 1'][
+                ~source['Athlete Name'].isin(coaches)]
 
     # Get rid of lowest scores for people that may have tested more than once and sort
     lift_1r = lift_1r.groupby('Athlete', group_keys=False).apply(lambda x: x.loc[x.Weight.idxmax()])
@@ -143,8 +144,7 @@ def weightsheets(cycle, start_date, end_date):
         if os.path.isfile(f):
             source = pd.read_excel(f)
 
-            lift = source[['Date', 'Athlete', 'Athlete Name', 'Result']][
-                ~source['Athlete Name'].isin(coaches)]
+            lift = source[['Date', 'Athlete', 'Athlete Name', 'Result']]
 
             lift['Scheme'], lift['Weight'] = lift['Result'].str.split(' @ ', 1).str
 
@@ -181,9 +181,12 @@ def weightsheets(cycle, start_date, end_date):
 
             joined = pd.merge(members, lift_all, how='left')
 
+            joined = joined[['Athlete Name', 'Weight']][
+                ~joined['Athlete Name'].isin(coaches)]
+            
             joined['Athlete Name'] = joined['Athlete Name'].str.upper()
-            joined_sort = joined.sort_values('Athlete Name')
-            joined_final = joined_sort[['Athlete Name', 'Weight']]
+
+            joined_final = joined.sort_values('Athlete Name')
 
             low_pcts = [i / 100.0 for i in range(40, 70, 5)]
             high_pcts = [i / 1000.0 for i in range(675, 1025, 25)]
@@ -255,8 +258,8 @@ def main():
     """Main function. Calculates attendance, metcon and weight leaderboards,
     and weightshet percentages for current cycle.
     """
-    attendance_leaderboard(CYCLE)
-    metcon_leaderboards(CYCLE)
+    # attendance_leaderboard(CYCLE)
+    # metcon_leaderboards(CYCLE)
     weightsheets(CYCLE, TESTING_START, TESTING_END)
 
 
