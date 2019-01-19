@@ -31,6 +31,7 @@ class Reports:
 
     metcons_id = 'WodifyAdminTheme_wt23_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent_wtMainContent_wtReportsTableRecords_ctl04_W_Widgets_UI_wt4_block_wtViewButtonPlaceholder_wt26'
     weightlifting_id = 'WodifyAdminTheme_wt23_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent_wtMainContent_wtReportsTableRecords_ctl08_W_Widgets_UI_wt4_block_wtViewButtonPlaceholder_wt26'
+    # weightlifiting_href_xpath = '//a[@href="ReportRedirect.aspx?ReportId=11"]' 
     date_xpath = "//select[contains(@id, 'DateRange')]"
     date_from_xpath = "//input[contains(@id, 'DateInputFrom')]"
     date_to_xpath = "//input[contains(@id, 'DateInputTo')]"
@@ -52,6 +53,7 @@ class Reports:
         elif report_type == 'metcon':
             browser.find_element_by_id(self.metcons_id).click()
         elif report_type == 'weightlifting':
+            # browser.find_element_by_xpath(self.weightlifiting_href_xpath).click()
             browser.find_element_by_id(self.weightlifting_id).click()
         else:
             print('Report type {} not implemented'.format(report_type))
@@ -98,9 +100,11 @@ class Reports:
         :return: Complete member roster at time of pull
         """
         athlete_report_id = "WodifyAdminTheme_wt2_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent_wtMainContent_wtReportsTableRecords_ctl02_W_Widgets_UI_wt21_block_wtViewButtonPlaceholder_wt12"
+        athlete_report_href_xpath = '//a[@href="ReportRedirect.aspx?ReportId=19"]'
         program_xpath = "//select[contains(@id, 'Programs')]"
         browser.find_element_by_link_text("ATHLETES").click()
-        browser.find_element_by_id(athlete_report_id).click()
+        # browser.find_element_by_id(athlete_report_id).click()
+        browser.find_element_by_xpath(athlete_report_href_xpath).click()
         program = Select(browser.find_element_by_xpath(program_xpath))
         program.select_by_visible_text('CrossFit')
         time.sleep(2)
@@ -117,12 +121,13 @@ class Reports:
         :return: Total attendance for active members 
         """
         browser.find_element_by_link_text("ATTENDANCE").click()
-        total_attendance_id = "WodifyAdminTheme_wt28_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent_wtMainContent_wtReportsTableRecords_ctl26_W_Widgets_UI_wt21_block_wtViewButtonPlaceholder_wt25"
-        browser.find_element_by_id(total_attendance_id).click()
+        total_attendance_href_xpath = '//a[@href="ReportRedirect.aspx?ReportId=29"]'
+        browser.find_element_by_xpath(total_attendance_href_xpath).click()
 
         self.set_dates(browser, from_date, to_date)
 
         browser.find_element_by_class_name("Panel_content").click()
+        time.sleep(10) # need to figure out how to wait for this to get everyone >.< 
         expt = browser.find_element_by_xpath(self.export_xpath)
         expt.click()
         time.sleep(1)
