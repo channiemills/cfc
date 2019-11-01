@@ -258,8 +258,8 @@ def main():
     """Main function. Calculates attendance, metcon and weight leaderboards,
     and weightshet percentages for current cycle.
     """
-    # attendance_leaderboard(CYCLE)
-    # metcon_leaderboards(CYCLE)
+    attendance_leaderboard(CYCLE)
+    metcon_leaderboards(CYCLE)
     weightsheets(CYCLE, TESTING_START, TESTING_END)
 
 
