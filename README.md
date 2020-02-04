@@ -44,4 +44,28 @@ Download management.
 - Run wodify.py again for users (known bug)
 - Run utilities.py
 - Run process.py
- 
+
+### Dependencies
+- Attendance:
+  - Users.xlsx
+  - TotalAttendanceHistory.xlsx
+
+### Refactoring ideas
+- Attendance
+  - Raise error if missing files
+  - UI Flow:
+    - Click "Attendance"
+    - Upload two files
+    - Click "Submit"
+      - Submit is probably an API endpoint that:
+            - verifies the files exist
+            - reads the two files into dataframes
+            - calculates the attendance for m,f
+            - returns csvs 
+- General
+  - Unit tests
+    - continuous integration in gh + flake8
+  - Docstrings
+  - Update linter so all errors aren't treated as warnings
+  - Helper function for splitting a df into two by gender
+  - Consider putting in issues for these instead of tracking in readme
