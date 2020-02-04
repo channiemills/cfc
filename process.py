@@ -161,7 +161,7 @@ def weightsheets(cycle, start_date, end_date):
 
             # reduce to rows of 1 x 1 (1RM) for teseters
             lift_1r = lift_testing[lift_testing['Scheme'] == '1 x 1']
-## stuff i will have to do for both dfs
+            ## stuff i will have to do for both dfs
             # Get rid of lowest scores for people that may have tested more than once and sort
             lift_1r = lift_1r.groupby('Athlete', group_keys=False).apply(lambda x: x.loc[x.Weight.idxmax()])
             lift_sixmo = lift_sixmo.groupby('Athlete', group_keys=False).apply(lambda x: x.loc[x.Weight.idxmax()])
@@ -232,12 +232,18 @@ def attendance_leaderboard(cycle):
     """
     f = f'{DOWNLOADS_DIR}\\{cycle}_TotalAttendanceHistory.xlsx'
     u = f'{DOWNLOADS_DIR}\\{cycle}_Users.xlsx'
-    if os.path.isfile(f) and os.path.isfile(u):
+    if os.path.isfile(f) and os.path.isfile(u):  # TODO: separate function to validate files exist
         users = pd.read_excel(u)
         att = pd.read_excel(f)
 
+        # add 'Class Start Date'
+        att['Class Start Date'] = pd.to_datetime(att['Class Start Date Time']).dt.date
+
         # Group by user and sort based on attendance descending
-        att_cycle_users = pd.DataFrame({'Count': att.groupby(['User', 'Athlete']).size()}).reset_index()
+        att_cycle_users = pd.DataFrame(
+            {'Count': att.groupby(['User', 'Athlete'])
+                         .apply(lambda x: len(x['Class Start Date'].unique()))
+            }).reset_index()
         att_sort = att_cycle_users.sort_values('Count', ascending=False)
 
         att_sort['Gender'] = att_sort['User'].map(users.set_index('User')['Gender'])
