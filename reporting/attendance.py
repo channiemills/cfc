@@ -10,7 +10,7 @@ def _helper_files_exist(attendance_file_path, user_file_path) -> bool:
     return os.path.isfile(attendance_file_path) and os.path.isfile(user_file_path)
 
 
-def _get_helper_dfs(attendance_file_path, user_file_path):  # TODO: should this accept dataframes?
+def _get_helper_dfs(attendance_file_path, user_file_path):
     """
     Reads in excel files
     """
@@ -22,17 +22,29 @@ def _get_helper_dfs(attendance_file_path, user_file_path):  # TODO: should this 
 def attendance_leaderboard(attendance_df, users_df) -> tuple:
     """
     Calculates the attendance leaderboard
+
+    Parameters
+    ----------
+    attendance_df : pandas.DataFrame()
+        Dataframe of attendance data exported from Wodify
+    users_df : pandas.DataFrame()
+        Dataframe of user data exported from Wodify
+
+    Returns
+    -------
+    tuple
+        Tuple of two dateframes with attendance calculated and broken out by gender.
     """
     attendance_df['Class Start Date'] = pd.to_datetime(attendance_df['Class Start Date Time']).dt.date
 
     # Count unique days attended per user
     att_count = pd.DataFrame(
         {'Count': attendance_df.groupby(['User', 'Athlete'])
-                    .apply(lambda x: len(x['Class Start Date'].unique()))
+                  .apply(lambda x: len(x['Class Start Date'].unique()))
         }).reset_index()
     att_sort = att_count.sort_values('Count', ascending=False)
 
-    # Add Gender Column
+    # Add gender column
     att_sort['Gender'] = att_sort['User'].map(users_df.set_index('User')['Gender'])
     att_male = att_sort[att_sort['Gender'] == 'Male']
     att_female = att_sort[att_sort['Gender'] == 'Female']

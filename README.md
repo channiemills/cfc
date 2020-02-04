@@ -65,4 +65,7 @@ Download management.
 - General
   - Unit tests
     - continuous integration in gh + flake8
+  - Docstrings
+  - Update linter so all errors aren't treated as warnings
   - Helper function for splitting a df into two by gender
+  - Consider putting in issues for these instead of tracking in readme
