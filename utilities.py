@@ -3,9 +3,9 @@ Helper utilities
 """
 
 import glob
+import openpyxl
 import os
 import pathlib
-import openpyxl
 
 from conf_vars import CYCLE, DOWNLOADS_DIR, RESULTS_DIR
 
@@ -44,7 +44,7 @@ def file_rename(filenames, cycle):
             os.rename(f, dst)
             print(f'Moved {f} to {dst}')
         if not liftname:
-            print(f'No data in this file.')
+            print(f'No data in {f}')
 
 
 def clean_name(liftname):
