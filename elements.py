@@ -9,13 +9,14 @@ from selenium.webdriver.support.ui import Select
 
 # TODO - customize download dir per: https://stackoverflow.com/questions/46937319/how-to-use-chrome-webdriver-in-selenium-to-download-files-in-python
 
+REPORTS_URL = 'https://app.wodify.com/Reporting/PerformanceResultsReportsListEntry.aspx'
 
 class Login:
 
-    home = 'https://app.wodify.com/Reporting/PerformanceResultsReportsListEntry.aspx'
-    username_fieldname = 'wtLayoutLogin$SilkUIFramework_wt8$block$wtUsername$wtUsername$wtUserNameInput'
-    password_fieldname = 'wtLayoutLogin$SilkUIFramework_wt8$block$wtPassword$wtPassword$wtPasswordInput'
-    login_fieldname = 'wtLayoutLogin$SilkUIFramework_wt8$block$wtAction$wtAction$wtLoginButton'
+    home = REPORTS_URL
+    username_fieldname = 'WDS_wt1$block$wtContentForm$wtUserNameInput'
+    password_fieldname = 'WDS_wt1$block$wtContentForm$wtPasswordInput'
+    login_fieldname = 'WDS_wt1$block$wtContentForm$wtLoginButton'
 
     def login(self, browser, username, password):
         browser.get(self.home)
@@ -38,8 +39,8 @@ class Reports:
     component_xpath = "//select[contains(@id, 'Component')]"
     export_xpath = "//a[contains(@id, 'Export')]"
 
-    whitespace_id = "WodifyAdminTheme_wt14_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent_SilkUIFramework_wt84_block_wtColumn2"
-    whitespace_id_metcon = "WodifyAdminTheme_wt51_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent_SilkUIFramework_wt84_block_wtColumn2"
+    whitespace_id = "WodifyAdminTheme_wt14_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent"
+    whitespace_id_metcon = "WodifyAdminTheme_wt51_block_WodifyAdminThemeBase_wt16_block_wtMainContent_W_Widgets_UI_wt13_block_wtContent"
 
     def open_reports(self, browser, report_type):
         """
@@ -51,10 +52,12 @@ class Reports:
             print('Report type not found')
             browser.quit()
         elif report_type == 'metcon':
-            browser.find_element_by_id(self.metcons_id).click()
+            # browser.find_element_by_id(self.metcons_id).click()
+            browser.find_element_by_xpath('//a[contains(@href, "ReportId=2")]').click()
         elif report_type == 'weightlifting':
             # browser.find_element_by_xpath(self.weightlifiting_href_xpath).click()
-            browser.find_element_by_id(self.weightlifting_id).click()
+            # browser.find_element_by_id(self.weightlifting_id).click()
+            browser.find_element_by_xpath('//a[contains(@href, "ReportId=11")]').click()
         else:
             print('Report type {} not implemented'.format(report_type))
 
@@ -67,6 +70,7 @@ class Reports:
         :param exercise: List of exercises to search
         :return: 
         """
+        browser.get(REPORTS_URL)
         self.open_reports(browser, report_type)
 
         self.set_dates(browser, from_date, to_date) #consider making date class properties
@@ -81,7 +85,7 @@ class Reports:
                 #component = Select(browser.find_element_by_id(self.component_id))
                 component = Select(browser.find_elements_by_xpath(self.component_xpath)[1])
                 component.select_by_visible_text(exercise)
-                time.sleep(3)
+                time.sleep(5)
                 if report_type == 'metcon':
                     whitespace = browser.find_element_by_id(self.whitespace_id_metcon)
                 else:
@@ -90,8 +94,7 @@ class Reports:
                 whitespace.click()
                 expt = browser.find_element_by_xpath(self.export_xpath)
                 expt.click()
-                time.sleep(1)
-
+                time.sleep(5)
 
     def athlete_report(self, browser):
         """
@@ -120,6 +123,8 @@ class Reports:
         :param to_date: 
         :return: Total attendance for active members 
         """
+        browser.get(REPORTS_URL)
+        browser.find_element_by_class_name("menu-head_mobile-nav").click()
         browser.find_element_by_link_text("ATTENDANCE").click()
         total_attendance_href_xpath = '//a[@href="ReportRedirect.aspx?ReportId=29"]'
         browser.find_element_by_xpath(total_attendance_href_xpath).click()
@@ -137,7 +142,10 @@ class Reports:
         all_users_xpath = "//a[contains(@id, 'SelectAll')]"
         bulk_actions_id = "WodifyAdminTheme_wtLayout_List_WithFilterTabs_block_WodifyAdminThemeBase_wt17_block_wtMainContent_W_Widgets_UI_wt107_block_wtContent_TabFilters_UI_wtTabFilters_block_wtListOfRecords_W_Widgets_UI_wt106_block_wtText"
 
+        browser.get(REPORTS_URL)
+        browser.find_element_by_class_name("menu-head_mobile-nav").click()
         browser.find_element_by_link_text("PEOPLE").click()
+        # browser.find_element_by_xpath('//a[@href="/AdminAthlete/UserListEntry.aspx"]').click()
         browser.find_element_by_link_text("ATHLETES").click()
         time.sleep(2)
         browser.find_element_by_xpath(checkbox_xpath).click()
